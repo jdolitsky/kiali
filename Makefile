@@ -39,11 +39,7 @@ GO_VERSION_KIALI = 1.8.3
 # version will be the same name as the branch allowing you to
 # deploy different builds at the same time.
 DOCKER_NAME ?= kiali/kiali
-ifeq  ("${VERSION_LABEL}","master")
-  DOCKER_VERSION ?= dev
-else
-  DOCKER_VERSION ?= ${VERSION_LABEL}
-endif
+DOCKER_VERSION ?= latest
 DOCKER_TAG = ${DOCKER_NAME}:${DOCKER_VERSION}
 
 # Indicates which version of the UI console is to be embedded
