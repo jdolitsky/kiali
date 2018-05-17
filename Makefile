@@ -6,6 +6,9 @@ SHELL=/bin/bash
 VERSION ?= 0.3.0.Alpha-SNAPSHOT
 COMMIT_HASH ?= $(shell git rev-parse HEAD)
 
+# Google cloud
+GCLOUD_USERNAME ?= $(shell gcloud config get-value account)
+
 # Version label is used in the OpenShift/K8S resources to identify
 # their specific instances. These resources will have labels of
 # "app: kiali" and "version: ${VERSION_LABEL}" In this development
@@ -211,9 +214,12 @@ k8s-deploy: k8s-undeploy
 	@echo Deploying to Kubernetes namespace ${NAMESPACE}
 	cat deploy/kubernetes/kiali-configmap.yaml | VERSION_LABEL=${VERSION_LABEL} NAME_SUFFIX=${NAME_SUFFIX} envsubst | kubectl create -n ${NAMESPACE} -f -
 	cat deploy/kubernetes/kiali.yaml | IMAGE_NAME=${DOCKER_NAME} IMAGE_VERSION=${DOCKER_VERSION} NAMESPACE=${NAMESPACE} VERSION_LABEL=${VERSION_LABEL} NAME_SUFFIX=${NAME_SUFFIX} VERBOSE_MODE=${VERBOSE_MODE} envsubst | kubectl create -n ${NAMESPACE} -f -
+	kubectl create clusterrolebinding kiali --clusterrole=cluster-admin --user=${GCLOUD_USERNAME}
+	cat deploy/kubernetes/kiali-clusterrole.yaml | IMAGE_NAME=${DOCKER_NAME} IMAGE_VERSION=${DOCKER_VERSION} NAMESPACE=${NAMESPACE} VERSION_LABEL=${VERSION_LABEL} NAME_SUFFIX=${NAME_SUFFIX} VERBOSE_MODE=${VERBOSE_MODE} envsubst | kubectl create -n ${NAMESPACE} -f -
 
 k8s-undeploy:
 	@echo Undeploying from Kubernetes namespace ${NAMESPACE}
+	kubectl delete clusterrolebindings kiali || true
 	kubectl delete all,secrets,sa,configmaps,deployments,ingresses,clusterroles,clusterrolebindings,routerules --selector=app=kiali --selector=version=${VERSION_LABEL} -n ${NAMESPACE}
 
 k8s-reload-image: .k8s-validate
