@@ -14,11 +14,12 @@ metadata:
     app: kiali
     version: ${VERSION_LABEL}
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
-  - name: tcp
+  - name: http
     protocol: TCP
     port: 20001
+    targetPort: 20001
   selector:
     app: kiali
     version: ${VERSION_LABEL}

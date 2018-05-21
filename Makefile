@@ -212,6 +212,7 @@ k8s-deploy: k8s-undeploy
 	cat deploy/kubernetes/kiali.yaml | IMAGE_NAME=${DOCKER_NAME} IMAGE_VERSION=${DOCKER_VERSION} NAMESPACE=${NAMESPACE} VERSION_LABEL=${VERSION_LABEL} NAME_SUFFIX=${NAME_SUFFIX} VERBOSE_MODE=${VERBOSE_MODE} envsubst | kubectl create -n ${NAMESPACE} -f -
 	kubectl create clusterrolebinding kiali --clusterrole=cluster-admin --user=${GCLOUD_USERNAME}
 	cat deploy/kubernetes/kiali-clusterrole.yaml | IMAGE_NAME=${DOCKER_NAME} IMAGE_VERSION=${DOCKER_VERSION} NAMESPACE=${NAMESPACE} VERSION_LABEL=${VERSION_LABEL} NAME_SUFFIX=${NAME_SUFFIX} VERBOSE_MODE=${VERBOSE_MODE} envsubst | kubectl create -n ${NAMESPACE} -f -
+	echo $$(kubectl get services -n istio-system kiali${NAME_SUFFIX} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):20001
 
 k8s-undeploy:
 	@echo Undeploying from Kubernetes namespace ${NAMESPACE}
